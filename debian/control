@@ -9,9 +9,9 @@ Build-Depends:
  python3-setuptools
 Standards-Version: 4.6.2
 Rules-Requires-Root: no
-Homepage: https://gitlab.com/lenchan139/labelprinter-vc500w
-Vcs-Browser: https://gitlab.com/lenchan139/labelprinter-vc500w
-Vcs-Git: https://gitlab.com/lenchan139/labelprinter-vc500w.git
+Homepage: https://github.com/snoack/labelprinter-vc500w
+Vcs-Browser: https://github.com/snoack/labelprinter-vc500w
+Vcs-Git: https://github.com/snoack/labelprinter-vc500w.git
 
 Package: labelprinter-vc500w
 Architecture: all

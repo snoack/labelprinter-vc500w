@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: labelprinter-vc500w
-Upstream-Contact: Len Chan <lenchan139@tto.moe>
-Source: https://gitlab.com/lenchan139/labelprinter-vc500w
+Upstream-Contact: Sebastian Noack <sebastian.noack@gmail.com>
+Source: https://github.com/snoack/labelprinter-vc500w
 
 Files: *
 Copyright:
