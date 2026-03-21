@@ -14,8 +14,13 @@ This is an unofficial, community-maintained tool. It is not affiliated with or s
 
 ### On Debian/Ubuntu
 
-1. Download the latest `.deb` package from the *Releases* page for this repository.
-2. Install it with `apt`:
+You can install `labelprinter-vc500w` via [`deb-get`](https://github.com/wimpysworld/deb-get):
+
+```sh
+sudo deb-get install labelprinter-vc500w
+```
+
+Alternatively, download the latest `.deb` package from the [Releases](https://github.com/snoack/labelprinter-vc500w/releases) page for this repository and install it with `apt`:
 
 ```sh
 sudo apt install ./labelprinter-vc500w_<version>_all.deb
