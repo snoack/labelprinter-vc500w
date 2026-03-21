@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # Copyright (c) Andrea Micheloni 2021
+# Copyright (c) Sebastian Noack 2026
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -15,4 +16,4 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-exec /usr/bin/env python3 -m labelprinter "$@"
+exec /usr/bin/env _PROG="$(basename "$0")" python3 -m labelprinter "$@"

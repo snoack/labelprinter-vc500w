@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME = labelprinter
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_test:
+	python3 debian/run-unit-tests
+
+override_dh_python3:
+	dh_python3 --no-guessing-deps

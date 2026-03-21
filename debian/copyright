@@ -1,0 +1,24 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: labelprinter-vc500w
+Upstream-Contact: Len Chan <lenchan139@tto.moe>
+Source: https://gitlab.com/lenchan139/labelprinter-vc500w
+
+Files: *
+Copyright:
+ 2021 Andrea Micheloni
+ 2022 Len Chan <lenchan139@tto.moe>
+ 2026 Sebastian Noack <sebastian.noack@gmail.com>
+License: AGPL-3+
+
+Files: debian/*
+Copyright: 2026 Sebastian Noack <sebastian.noack@gmail.com>
+License: AGPL-3+
+
+License: AGPL-3+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ .
+ On Debian systems, the full text of the GNU Affero General Public License
+ version 3 can be found in /usr/share/common-licenses/AGPL-3.

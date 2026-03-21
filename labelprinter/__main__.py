@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #
 # Copyright (c) Andrea Micheloni 2021
+# Copyright (c) Sebastian Noack 2026
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -18,8 +19,13 @@
 
 import argparse, json
 import gzip
+import os
                                       
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+
 import tempfile
 import io
 
@@ -28,7 +34,7 @@ from labelprinter.connection import Connection
 from labelprinter.printer import LabelPrinter
 
 def main():
-    parser = argparse.ArgumentParser(description='Remotely control a VC-500W via TCP/IP.', allow_abbrev=False, add_help=False, prog='labelprinter.sh');
+    parser = argparse.ArgumentParser(description='Remotely control a VC-500W via TCP/IP.', allow_abbrev=False, add_help=False, prog=os.environ.get('_PROG'));
     parser.add_argument('-?', '--help', action='help', help='show this help message and exit');
     parser.add_argument('-h', '--host', default='192.168.0.1', help='the VC-500W\'s hostname or IP address, defaults to %(default)s');
     parser.add_argument('-p', '--port', type=int, default=9100, help='the VC-500W\'s port number, defaults to %(default)s');
@@ -118,7 +124,7 @@ def print_jpeg(printer, use_lock, mode, cut, jpeg_file, wait_after_print):
             print('Job status: %s, %s, %s. Sending the print command...' %(job_status.print_state, job_status.print_job_stage, job_status.print_job_error));
         file_type = mimetypes.guess_type(jpeg_file.name)[0];
         print('Input file type is %s' % (file_type));
-        if file_type.startswith('image/') and not file_type == 'image/jpeg':
+        if Image != None and file_type.startswith('image/') and not file_type == 'image/jpeg':
             print('Is %s but not jpeg, try convert' % file_type)
             try:
                 with tempfile.NamedTemporaryFile() as tmp:
@@ -133,7 +139,6 @@ def print_jpeg(printer, use_lock, mode, cut, jpeg_file, wait_after_print):
                     print('%s convert to %s' % ( old_file_type, file_type))
             except:
                 print('fail for convert to jpg, ')
-       
 
         if file_type == 'image/jpeg':
             print_answer = printer.print_jpeg(jpeg_file, mode, cut);

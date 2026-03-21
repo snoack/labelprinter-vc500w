@@ -1,0 +1,5 @@
+labelprinter-vc500w (0.1) unstable; urgency=medium
+
+  * Initial Debian packaging.
+
+ -- Sebastian Noack <sebastian.noack@gmail.com>  Tue, 17 Mar 2026 12:00:00 -0400
