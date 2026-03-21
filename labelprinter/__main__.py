@@ -26,6 +26,11 @@ try:
 except ImportError:
     Image = None
 
+try:
+    import argcomplete
+except ImportError:
+    argcomplete = None
+
 import tempfile
 import io
 
@@ -55,6 +60,9 @@ def main():
 
     status_group = parser.add_argument_group('status options')
     status_group.add_argument('-j', '--json', action='store_true', help='return the status information in JSON format');
+
+    if argcomplete is not None:
+        argcomplete.autocomplete(parser)
 
     process_arguments(parser.parse_args());
 

@@ -16,7 +16,7 @@ Vcs-Git: https://gitlab.com/lenchan139/labelprinter-vc500w.git
 Package: labelprinter-vc500w
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends}
-Recommends: python3-pil
+Recommends: python3-argcomplete, python3-pil
 Description: command-line driver for Brother VC-500W label printers
  Control Brother VC-500W color label printers over TCP/IP from Debian.
  .
