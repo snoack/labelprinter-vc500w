@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #
 # Copyright (c) Andrea Micheloni 2021
+# Copyright (c) Sebastian Noack 2026
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -79,13 +80,13 @@ class Question:
 
 class RegexReader:
     def get_numeric_XML_value_regex(self, name):
-        return re.compile('.*<%s>(\d+)</%s>.*' % (name, name), re.I | re.S);
+        return re.compile(r'.*<%s>(\d+)</%s>.*' % (name, name), re.I | re.S);
 
     def get_float_XML_value_regex(self, name):
-        return re.compile('.*<%s>([0-9\.]+)</%s>.*' % (name, name), re.I | re.S);
+        return re.compile(r'.*<%s>([0-9.]+)</%s>.*' % (name, name), re.I | re.S);
 
     def get_string_XML_value_regex(self, name):
-        return re.compile('.*<%s>(.+)</%s>.*' % (name, name), re.I | re.S);
+        return re.compile(r'.*<%s>(.+)</%s>.*' % (name, name), re.I | re.S);
 
     def get_numeric_XML_value(self, name, data, default = None):
         match = self.get_numeric_XML_value_regex(name).match(data);
