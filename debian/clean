@@ -1,4 +1,5 @@
 build/
+debian/build/
 brother_color_label_printer.egg-info/
 labelprinter/__pycache__/
 labelprinter/test/__pycache__/

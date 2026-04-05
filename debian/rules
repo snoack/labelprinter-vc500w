@@ -1,9 +1,23 @@
 #!/usr/bin/make -f
 
 export PYBUILD_NAME = labelprinter
+DEB_VERSION = $(shell dpkg-parsechangelog -SVersion)
+MANPAGE_DIR = debian/build/man
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_build:
+	dh_auto_build
+	mkdir -p $(MANPAGE_DIR)
+	argparse-manpage \
+		--pyfile labelprinter/__main__.py \
+		--function get_argument_parser \
+		--project-name 'labelprinter-vc500w' \
+		--url 'https://github.com/snoack/labelprinter-vc500w' \
+		--version '$(DEB_VERSION)' \
+		--prog bclprinter \
+		> $(MANPAGE_DIR)/bclprinter.1
 
 override_dh_auto_test:
 	python3 debian/run-unit-tests

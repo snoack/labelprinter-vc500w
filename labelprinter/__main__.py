@@ -50,7 +50,7 @@ def _get_deprecated_kwargs():
 
 DEPRECATED_ARGUMENT_KWARGS = _get_deprecated_kwargs()
 
-def main():
+def get_argument_parser():
     parser = argparse.ArgumentParser(description='Remotely control a VC-500W via TCP/IP.', allow_abbrev=False, add_help=False, prog=os.environ.get('_PROG'));
     parser.add_argument('-?', '--help', action='help', help='show this help message and exit');
     parser.add_argument('-h', '--host', default='192.168.0.1', help='the VC-500W\'s hostname or IP address, defaults to %(default)s');
@@ -74,10 +74,7 @@ def main():
     status_group = parser.add_argument_group('status options')
     status_group.add_argument('-j', '--json', action='store_true', help='return the status information in JSON format');
 
-    if argcomplete is not None:
-        argcomplete.autocomplete(parser, exclude=['--print-jpeg'])
-
-    process_arguments(parser.parse_args());
+    return parser
 
 def _get_configuration_and_display_connection(printer):
     configuration = printer.get_configuration();
@@ -181,7 +178,12 @@ def release_lock(printer, job_id):
     print('Releasing lock for job %s...' % job_id);
     printer.release(job_id);
 
-def process_arguments(args):
+def main():
+    parser = get_argument_parser()
+    if argcomplete is not None:
+        argcomplete.autocomplete(parser, exclude=['--print-jpeg'])
+
+    args = parser.parse_args()
     connection = None;
     try:
         printer = LabelPrinter(Connection(args.host, args.port))
