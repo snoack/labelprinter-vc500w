@@ -1,5 +1,7 @@
 build/
+dist/
 debian/build/
+labelprinter_vc500w.egg-info/
 brother_color_label_printer.egg-info/
 labelprinter/__pycache__/
 labelprinter/test/__pycache__/

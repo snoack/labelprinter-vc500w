@@ -5,6 +5,7 @@ Maintainer: Sebastian Noack <sebastian.noack@gmail.com>
 Build-Depends:
  debhelper-compat (= 13),
  dh-python,
+ pybuild-plugin-pyproject,
  python3,
  python3-argcomplete,
  python3-argparse-manpage,
