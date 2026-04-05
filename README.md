@@ -85,7 +85,8 @@ The module can be started with the included `labelprinter.sh` helper script or v
 usage: labelprinter.sh [-?] [-h HOST] [-p PORT]
                        (--print-image IMAGE | --print-jpeg IMAGE | --get-status | --release JOB_ID)
                        [--print-lock] [--print-mode {vivid,normal}]
-                       [--print-cut {none,half,full}] [--wait-after-print]
+                       [--print-cut {none,half,full}] [--force]
+                       [--wait-after-print]
                        [-j]
 
 Remotely control a VC-500W via TCP/IP.
@@ -114,6 +115,9 @@ print options:
                         sets the cut mode after printing, either not cutting
                         (none), allowing the user to slide to cut (half),
                         or performing a complete cut (full), defaults to full
+  --force               skip the failed-print safeguard and send the image
+                        even if a smaller image caused the printer to lock up
+                        before
   --wait-after-print    wait for the printer to turn idle after printing
                         before returning
 

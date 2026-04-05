@@ -20,6 +20,8 @@
 import argparse, json
 import gzip
 import os
+import sqlite3
+from contextlib import closing
                                       
 try:
     from PIL import Image
@@ -35,6 +37,15 @@ import tempfile
 import io
 
 import mimetypes
+
+PRINT_LOG_SCHEMA = '''
+    CREATE TABLE IF NOT EXISTS prints (
+        byte_size INTEGER NOT NULL,
+        width     INTEGER NOT NULL,
+        height    INTEGER NOT NULL,
+        error     TEXT
+    )
+'''
 
 def _get_deprecated_kwargs():
     parser = argparse.ArgumentParser(add_help=False)
@@ -67,6 +78,7 @@ def get_argument_parser():
     print_group.add_argument('--print-lock', action='store_true', help='use the lock/release mechanism for printing (error prone, do not use unless strictly required)');
     print_group.add_argument('--print-mode', choices=['vivid', 'normal'], default='vivid', help='sets the print mode for a vivid or normal printing, defaults to %(default)s');
     print_group.add_argument('--print-cut', choices=['none', 'half', 'full'], default='full', help='sets the cut mode after printing, either not cutting (none), allowing the user to slide to cut (half) up to a complete cut of the label (full), defaults to %(default)s');
+    print_group.add_argument('--force', action='store_true', help='skip the failed-print safeguard and send the image even if a smaller image caused the printer to lock up before');
     print_group.add_argument('--wait-after-print', action='store_true', help='wait for the printer to turn idle after printing before returning');
 
     status_group = parser.add_argument_group('status options')
@@ -126,7 +138,76 @@ def get_status(printer):
 
     print('Status is (%s, %s, %s).%s' % (status.print_state, status.print_job_stage, status.print_job_error, tape_remain));
 
-def print_image(printer, use_lock, mode, cut, image_file, wait_after_print):
+def _connect_database():
+    state_home = os.environ.get('XDG_STATE_HOME') or os.path.join(os.path.expanduser('~'), '.local', 'state')
+    log_directory = os.path.join(state_home, 'labelprinter-vc500w')
+    os.makedirs(log_directory, exist_ok = True)
+    return sqlite3.connect(os.path.join(log_directory, 'data.db'))
+
+def _prepare_image_for_print(image_file):
+    file_type = mimetypes.guess_type(image_file.name)[0]
+    needs_conversion = file_type != 'image/jpeg'
+
+    if Image is None:
+        if needs_conversion:
+            print('PRINT FAILED: not a JPEG file')
+            raise SystemExit(1)
+
+        return image_file, None
+
+    if needs_conversion:
+        print('Input is %s, converting to jpeg' % (file_type if file_type is not None else 'an unknown format'))
+
+    try:
+        with Image.open(image_file) as image:
+            image_size = image.size
+            if needs_conversion:
+                temp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
+                image.convert('RGB').save(temp_file, format='JPEG')
+                image_file.close()
+                image_file = temp_file
+    except Exception as error:
+        print('PRINT FAILED: image processing error: %s' % error)
+        raise SystemExit(1)
+
+    image_file.seek(0)
+    return image_file, image_size
+
+def _append_print_log(db, image_file, image_size, error = None):
+    if image_size is None:
+        return
+
+    with db:
+        db.execute(
+            'INSERT INTO prints (byte_size, width, height, error) VALUES (?, ?, ?, ?)',
+            (
+                os.path.getsize(image_file.name),
+                image_size[0],
+                image_size[1],
+                error,
+            )
+        )
+
+def _has_matching_failed_print(db, image_file, image_size):
+    if image_size is None:
+        return False
+
+    short_side, long_side = sorted(image_size)
+    return bool(db.execute(
+        'SELECT 1 FROM prints '
+        'WHERE error IS NOT NULL '
+        'AND min(width, height) <= ? '
+        'AND max(width, height) <= ? '
+        'AND byte_size <= ? '
+        'LIMIT 1',
+        (
+            short_side,
+            long_side,
+            os.path.getsize(image_file.name),
+        )
+    ).fetchone())
+
+def print_image(printer, use_lock, mode, cut, image_file, wait_after_print, force):
     _get_configuration_and_display_connection(printer);
     status = printer.get_status();
 
@@ -138,32 +219,29 @@ def print_image(printer, use_lock, mode, cut, image_file, wait_after_print):
         if use_lock:
             job_status = printer.get_job_status();
             print('Job status: %s, %s, %s. Sending the print command...' %(job_status.print_state, job_status.print_job_stage, job_status.print_job_error));
-        file_type = mimetypes.guess_type(image_file.name)[0];
-        print('Input file type is %s' % (file_type if file_type != None else 'unknown'));
-        if Image != None and (file_type == None or (file_type.startswith('image/') and not file_type == 'image/jpeg')):
-            print('Input is %s, trying to convert to jpeg' % (file_type if file_type != None else 'an unknown format'))
-            try:
-                with tempfile.NamedTemporaryFile() as tmp:
-                    im1 = Image.open(image_file.name)
-                    imX = im1.convert('RGB')
-                    pathName = tmp.name + '.jpg'
-                    imX.save(pathName)
-                    
-                    image_file = open(pathName, 'rb')
-                    old_file_type = file_type
-                    file_type = mimetypes.guess_type(image_file.name)[0];
-                    print('%s convert to %s' % ( old_file_type, file_type))
-            except:
-                print('fail for convert to jpg, ')
 
-        if file_type == 'image/jpeg':
-            print_answer = printer.print_jpeg(image_file, mode, cut);
-            if wait_after_print:
-                printer.wait_to_turn_idle();
-            print("PRINT OK");
-        else:
-            print('not a JPEG file');
-            print('PRINT FAILED');
+        image_file, image_size = _prepare_image_for_print(image_file)
+        with image_file, closing(_connect_database()) as db:
+            db.execute(PRINT_LOG_SCHEMA)
+
+            if not force and _has_matching_failed_print(db, image_file, image_size):
+                print('PRINT FAILED: matched a no-larger failed print. Use --force to bypass.')
+                raise SystemExit(1)
+
+            try:
+                printer.print_jpeg(image_file, mode, cut)
+                if wait_after_print:
+                    printer.wait_to_turn_idle()
+            except Exception as error:
+                print('PRINT FAILED: printer error: %s' % error)
+                # Only log bad printer responses here. We use these records to
+                # block future prints of the same or larger size, so transient
+                # errors such as an unreachable printer should not be recorded.
+                if isinstance(error, ValueError):
+                    _append_print_log(db, image_file, image_size, str(error))
+                raise SystemExit(1)
+            print("PRINT OK")
+            _append_print_log(db, image_file, image_size)
     finally:
         if use_lock:
             print('Releasing lock for job %s...' % lock.job_number);
@@ -195,7 +273,7 @@ def main():
             else:
                 get_status(printer);
         elif args.print_image != None:
-            print_image(printer, args.print_lock, args.print_mode, args.print_cut, args.print_image, args.wait_after_print);
+            print_image(printer, args.print_lock, args.print_mode, args.print_cut, args.print_image, args.wait_after_print, args.force)
         elif args.release != None:
             release_lock(printer, args.release);
         else:
