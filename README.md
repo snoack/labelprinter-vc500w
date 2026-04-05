@@ -79,50 +79,17 @@ bclprinter --host 192.168.5.5 --release JOB_ID
 
 ## Command reference
 
-The module can be started with the included `labelprinter.sh` helper script or via `python3 -m labelprinter`. The current command-line interface is:
+The module can be started with the included `labelprinter.sh` helper script or via `python3 -m labelprinter`.
 
-```
-usage: labelprinter.sh [-?] [-h HOST] [-p PORT]
-                       (--print-image IMAGE | --print-jpeg IMAGE | --get-status | --release JOB_ID)
-                       [--print-lock] [--print-mode {vivid,normal}]
-                       [--print-cut {none,half,full}] [--force]
-                       [--wait-after-print]
-                       [-j]
+For the full CLI reference, please refer to the built-in help or the man page:
 
-Remotely control a VC-500W via TCP/IP.
+```sh
+# if installed
+bclprinter --help
+man bclprinter
 
-optional arguments:
-  -?, --help            show this help message and exit
-  -h HOST, --host HOST  the VC-500W's hostname or IP address, defaults to
-                        192.168.0.1
-  -p PORT, --port PORT  the VC-500W's port number, defaults to 9100
-
-command argument:
-  --print-image IMAGE   prints a JPEG image, or converts another image format
-                        if Pillow is available
-  --print-jpeg IMAGE    deprecated alias for --print-image
-  --get-status          connects to the VC-500W and returns its status
-  --release JOB_ID      tries to release the printer from an unclean lock
-                        earlier on
-
-print options:
-  --print-lock          use the lock/release mechanism for printing (error
-                        prone, do not use unless strictly required)
-  --print-mode {vivid,normal}
-                        sets the print mode for a vivid or normal printing,
-                        defaults to vivid
-  --print-cut {none,half,full}
-                        sets the cut mode after printing, either not cutting
-                        (none), allowing the user to slide to cut (half),
-                        or performing a complete cut (full), defaults to full
-  --force               skip the failed-print safeguard and send the image
-                        even if a smaller image caused the printer to lock up
-                        before
-  --wait-after-print    wait for the printer to turn idle after printing
-                        before returning
-
-status options:
-  -j, --json            return the status information in JSON format
+# from a checkout
+./labelprinter.sh --help
 ```
 
 ## Technical details
