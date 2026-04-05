@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "labelprinter-vc500w"
-version = "1.0"
+version = "1.1"
 description = "CLI for controlling Brother VC-500W label printers over TCP/IP"
 readme = "README.md"
 requires-python = ">=3.5"
