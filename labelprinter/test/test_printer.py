@@ -22,6 +22,7 @@ from pathlib import Path
 from labelprinter.printer import *
 
 logger = logging.getLogger(__name__)
+TEST_DIR = Path(__file__).resolve().parent
 
 
 class MockConnection(object):
@@ -39,12 +40,12 @@ class MockConnection(object):
     def register_response_from_files(self, file_message, file_response, answer_description):
         logger.debug("Registering message/response pair in mock from files %s and %s", file_message, file_response)
 
-        return self.register_response(Path(file_message).read_text().rstrip(), Path(file_response).read_text().rstrip(), answer_description)
+        return self.register_response((TEST_DIR / file_message).read_text().rstrip(), (TEST_DIR / file_response).read_text().rstrip(), answer_description)
 
     def register_binary_response(self, file_message, file_response, answer_description):
         logger.debug("Registering message/response pair in mock from files (binary)%s and (ASCII)%s", file_message, file_response)
 
-        return self.register_response(Path(file_message).read_bytes(), Path(file_response).read_text().rstrip(), answer_description)
+        return self.register_response((TEST_DIR / file_message).read_bytes(), (TEST_DIR / file_response).read_text().rstrip(), answer_description)
 
     def send_message(self, message):
         data = message.get_data()
@@ -176,7 +177,7 @@ class TestPrinter(unittest.TestCase):
         printer._connection.register_response_from_files(setup_message, setup_response, setup_description)
         printer._connection.register_binary_response(image, image_response, image_description)
 
-        with open(image, 'rb') as image_handle:
+        with (TEST_DIR / image).open('rb') as image_handle:
             result = printer.print_jpeg(image_handle, mode, cut)
 
         logger.info("Got result: %s", result)

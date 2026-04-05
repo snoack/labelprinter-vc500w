@@ -28,7 +28,7 @@ override_dh_auto_build:
 		> $(COMPLETION_DIR)/zsh/_bclprinter
 
 override_dh_auto_test:
-	python3 debian/run-unit-tests
+	python3 -m unittest discover -s labelprinter/test -p test_printer.py
 
 override_dh_python3:
 	dh_python3 --no-guessing-deps
