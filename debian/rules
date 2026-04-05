@@ -1,8 +1,6 @@
 #!/usr/bin/make -f
 
 export PYBUILD_NAME = labelprinter
-DEB_VERSION = $(shell dpkg-parsechangelog -SVersion)
-MANPAGE_DIR = debian/build/man
 COMPLETION_DIR = debian/build/completion
 
 %:
@@ -10,16 +8,7 @@ COMPLETION_DIR = debian/build/completion
 
 override_dh_auto_build:
 	dh_auto_build
-	mkdir -p $(MANPAGE_DIR)
 	mkdir -p $(COMPLETION_DIR)/bash $(COMPLETION_DIR)/fish $(COMPLETION_DIR)/zsh
-	argparse-manpage \
-		--pyfile labelprinter/__main__.py \
-		--function get_argument_parser \
-		--project-name 'labelprinter-vc500w' \
-		--url 'https://github.com/snoack/labelprinter-vc500w' \
-		--version '$(DEB_VERSION)' \
-		--prog bclprinter \
-		> $(MANPAGE_DIR)/bclprinter.1
 	register-python-argcomplete --shell bash --no-defaults bclprinter \
 		> $(COMPLETION_DIR)/bash/bclprinter
 	register-python-argcomplete --shell fish bclprinter \

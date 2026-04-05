@@ -34,9 +34,7 @@ except ImportError:
 import tempfile
 import io
 
-import mimetypes 
-from labelprinter.connection import Connection
-from labelprinter.printer import LabelPrinter
+import mimetypes
 
 def _get_deprecated_kwargs():
     parser = argparse.ArgumentParser(add_help=False)
@@ -179,6 +177,9 @@ def release_lock(printer, job_id):
     printer.release(job_id);
 
 def main():
+    from labelprinter.connection import Connection
+    from labelprinter.printer import LabelPrinter
+
     parser = get_argument_parser()
     if argcomplete is not None:
         argcomplete.autocomplete(parser, exclude=['--print-jpeg'])

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=77.0.3"]
+requires = ["argparse-manpage[setuptools]"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -42,3 +42,15 @@ bclprinter = "labelprinter.__main__:main"
 
 [tool.setuptools]
 packages = ["labelprinter"]
+
+[tool.setuptools.data-files]
+"share/man/man1" = ["build/man/bclprinter.1"]
+
+[tool.setuptools.cmdclass]
+build_py = "build_manpages.build_py"
+build_manpages = "build_manpages.build_manpages"
+
+[tool.build_manpages]
+manpages = [
+  "build/man/bclprinter.1:function=get_argument_parser:pyfile=labelprinter/__main__.py:prog=bclprinter",
+]
