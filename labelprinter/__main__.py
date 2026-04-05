@@ -38,6 +38,18 @@ import mimetypes
 from labelprinter.connection import Connection
 from labelprinter.printer import LabelPrinter
 
+def _get_deprecated_kwargs():
+    parser = argparse.ArgumentParser(add_help=False)
+
+    try:
+        parser.add_argument('--deprecated-check', action='store_true', deprecated=True)
+    except TypeError:
+        return {}
+
+    return {'deprecated': True}
+
+DEPRECATED_ARGUMENT_KWARGS = _get_deprecated_kwargs()
+
 def main():
     parser = argparse.ArgumentParser(description='Remotely control a VC-500W via TCP/IP.', allow_abbrev=False, add_help=False, prog=os.environ.get('_PROG'));
     parser.add_argument('-?', '--help', action='help', help='show this help message and exit');
@@ -47,7 +59,8 @@ def main():
     command_group = parser.add_argument_group('command argument')
 
     group = command_group.add_mutually_exclusive_group(required=True);
-    group.add_argument('--print-jpeg', type=argparse.FileType('rb'), action='store', metavar='JPEG', help='prints a JPEG image out of the VC-500W');
+    group.add_argument('--print-image', dest='print_image', type=argparse.FileType('rb'), action='store', metavar='IMAGE', help='prints a JPEG image, or converts another image format if Pillow is available');
+    group.add_argument('--print-jpeg', dest='print_image', type=argparse.FileType('rb'), action='store', metavar='IMAGE', help='deprecated alias for --print-image', **DEPRECATED_ARGUMENT_KWARGS);
     group.add_argument('--get-status', action='store_true', help='connects to the VC-500W and returns its status');
     group.add_argument('--release', type=str, metavar='JOB_ID', help='tries to release the printer from an unclean lock earlier on');
 
@@ -62,7 +75,7 @@ def main():
     status_group.add_argument('-j', '--json', action='store_true', help='return the status information in JSON format');
 
     if argcomplete is not None:
-        argcomplete.autocomplete(parser)
+        argcomplete.autocomplete(parser, exclude=['--print-jpeg'])
 
     process_arguments(parser.parse_args());
 
@@ -118,7 +131,7 @@ def get_status(printer):
 
     print('Status is (%s, %s, %s).%s' % (status.print_state, status.print_job_stage, status.print_job_error, tape_remain));
 
-def print_jpeg(printer, use_lock, mode, cut, jpeg_file, wait_after_print):
+def print_image(printer, use_lock, mode, cut, image_file, wait_after_print):
     _get_configuration_and_display_connection(printer);
     status = printer.get_status();
 
@@ -130,26 +143,26 @@ def print_jpeg(printer, use_lock, mode, cut, jpeg_file, wait_after_print):
         if use_lock:
             job_status = printer.get_job_status();
             print('Job status: %s, %s, %s. Sending the print command...' %(job_status.print_state, job_status.print_job_stage, job_status.print_job_error));
-        file_type = mimetypes.guess_type(jpeg_file.name)[0];
-        print('Input file type is %s' % (file_type));
-        if Image != None and file_type.startswith('image/') and not file_type == 'image/jpeg':
-            print('Is %s but not jpeg, try convert' % file_type)
+        file_type = mimetypes.guess_type(image_file.name)[0];
+        print('Input file type is %s' % (file_type if file_type != None else 'unknown'));
+        if Image != None and (file_type == None or (file_type.startswith('image/') and not file_type == 'image/jpeg')):
+            print('Input is %s, trying to convert to jpeg' % (file_type if file_type != None else 'an unknown format'))
             try:
                 with tempfile.NamedTemporaryFile() as tmp:
-                    im1 = Image.open(jpeg_file.name)
+                    im1 = Image.open(image_file.name)
                     imX = im1.convert('RGB')
                     pathName = tmp.name + '.jpg'
                     imX.save(pathName)
                     
-                    jpeg_file = open(pathName, 'rb') 
+                    image_file = open(pathName, 'rb')
                     old_file_type = file_type
-                    file_type = mimetypes.guess_type(jpeg_file.name)[0];
+                    file_type = mimetypes.guess_type(image_file.name)[0];
                     print('%s convert to %s' % ( old_file_type, file_type))
             except:
                 print('fail for convert to jpg, ')
 
         if file_type == 'image/jpeg':
-            print_answer = printer.print_jpeg(jpeg_file, mode, cut);
+            print_answer = printer.print_jpeg(image_file, mode, cut);
             if wait_after_print:
                 printer.wait_to_turn_idle();
             print("PRINT OK");
@@ -178,8 +191,8 @@ def process_arguments(args):
                 get_status_json(printer);
             else:
                 get_status(printer);
-        elif args.print_jpeg != None:
-            print_jpeg(printer, args.print_lock, args.print_mode, args.print_cut, args.print_jpeg, args.wait_after_print);
+        elif args.print_image != None:
+            print_image(printer, args.print_lock, args.print_mode, args.print_cut, args.print_image, args.wait_after_print);
         elif args.release != None:
             release_lock(printer, args.release);
         else:

@@ -47,24 +47,24 @@ nbtscan -v -s : 192.168.1.1/24 | grep "VC-500W"
 
 You can either install this script (see above) or run it from a checkout of this repository.
 
-Minimum request to print a JPEG:
+Minimum request to print an image:
 
 ```sh
 # if installed
-bclprinter --host 192.168.5.5 --print-jpeg /home/user/my_screenshot.jpeg
+bclprinter --host 192.168.5.5 --print-image /home/user/my_screenshot.jpeg
 
 # from a checkout
-./labelprinter.sh --host 192.168.5.5 --print-jpeg /home/user/my_screenshot.jpeg
+./labelprinter.sh --host 192.168.5.5 --print-image /home/user/my_screenshot.jpeg
 ```
 
 Print with additional options:
 
 ```sh
 # if installed
-bclprinter --host 192.168.5.5 --print-mode vivid --print-cut full --print-jpeg /home/user/my_screenshot.jpeg
+bclprinter --host 192.168.5.5 --print-mode vivid --print-cut full --print-image /home/user/my_screenshot.jpeg
 
 # from a checkout
-./labelprinter.sh --host 192.168.5.5 --print-mode vivid --print-cut full --print-jpeg /home/user/my_screenshot.jpeg
+./labelprinter.sh --host 192.168.5.5 --print-mode vivid --print-cut full --print-image /home/user/my_screenshot.jpeg
 ```
 
 If a print job is done or jammed but the printer still appears locked, release the stale job lock with:
@@ -83,7 +83,7 @@ The module can be started with the included `labelprinter.sh` helper script or v
 
 ```
 usage: labelprinter.sh [-?] [-h HOST] [-p PORT]
-                       (--print-jpeg JPEG | --get-status | --release JOB_ID)
+                       (--print-image IMAGE | --print-jpeg IMAGE | --get-status | --release JOB_ID)
                        [--print-lock] [--print-mode {vivid,normal}]
                        [--print-cut {none,half,full}] [--wait-after-print]
                        [-j]
@@ -97,7 +97,9 @@ optional arguments:
   -p PORT, --port PORT  the VC-500W's port number, defaults to 9100
 
 command argument:
-  --print-jpeg JPEG     prints a JPEG image out of the VC-500W
+  --print-image IMAGE   prints a JPEG image, or converts another image format
+                        if Pillow is available
+  --print-jpeg IMAGE    deprecated alias for --print-image
   --get-status          connects to the VC-500W and returns its status
   --release JOB_ID      tries to release the printer from an unclean lock
                         earlier on
