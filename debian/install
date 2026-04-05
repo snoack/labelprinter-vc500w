@@ -1,2 +1,3 @@
-debian/completion/bash/bclprinter usr/share/bash-completion/completions/
-debian/completion/fish/bclprinter.fish usr/share/fish/vendor_completions.d/
+debian/build/completion/bash/bclprinter usr/share/bash-completion/completions/
+debian/build/completion/fish/bclprinter.fish usr/share/fish/vendor_completions.d/
+debian/build/completion/zsh/_bclprinter usr/share/zsh/vendor-completions/
